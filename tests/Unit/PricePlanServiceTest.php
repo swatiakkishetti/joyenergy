@@ -6,7 +6,6 @@ use App\Exceptions\InvalidMeterIdException;
 use App\Models\MeterReadingsInitialize;
 use App\Services\MeterReadingService;
 use App\Services\PricePlanService;
-use http\Exception\InvalidArgumentException;
 use Tests\TestCase;
 
 class PricePlanServiceTest extends TestCase
@@ -63,7 +62,7 @@ class PricePlanServiceTest extends TestCase
     public function get_Cost_Plan_For_All_Suppliers_Should_Return_Plans_With_Supplier_Info(){
         $costPlans = PricePlanServiceTest::$pricePlanService->getCostPlanForAllSuppliersWithCurrentSupplierDetails("smart-meter-1");
         $supplier = end($costPlans);
-        $this->assertEquals("ATheGreenEco", $supplier['Current Supplier']);
+        $this->assertEquals("The Green Eco", $supplier['Current Supplier']);
     }
 
     public static function tearDownAfterClass(): void

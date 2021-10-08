@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\InvalidMeterIdException;
 use App\Models\MeterReadingsInitialize;
 use App\Models\PricePlan;
+use Illuminate\Support\Facades\DB;
 
 class PricePlanService
 {
@@ -19,16 +20,21 @@ class PricePlanService
 
     public function getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId)
     {
-        $electricityReadings = $this->meterReadingService->getReadings($smartMeterId);
+        $getCostForAllPlans = [];
 
-        if (is_null($electricityReadings)) {
-            return $electricityReadings;
+        $readings = DB::table('electricity_readings')
+            ->join('smart_meters', 'electricity_readings.smart_meter_id', '=', 'smart_meters.id')
+            ->where('smart_meters.smartMeterId', '=', $smartMeterId)
+            ->get(['time', 'reading'])->toArray();
+
+        $pricePlans = DB::table('price_plans')->get(['supplier', 'unitRate'])->toArray();
+
+        if (is_null($readings)) {
+            return $readings;
         }
 
-        $getCostForAllPlans = [];
-        $pricePlans = $this->meterReadingInitializer->getPricePlans();
         foreach ($pricePlans as $pricePlan) {
-            $getCostForAllPlans[] = array('key' => $pricePlan->supplier, 'value' => $this->calculateCost($electricityReadings, $pricePlan));
+            $getCostForAllPlans[] = array('key' => $pricePlan->supplier, 'value' => $this->calculateCost($readings, $pricePlan));
         }
 
         return $getCostForAllPlans;
@@ -37,12 +43,16 @@ class PricePlanService
     public function getCostPlanForAllSuppliersWithCurrentSupplierDetails($smartMeterId)
     {
         $costPricePerPlans = $this->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
-        $currentAvailableSupplierIds = $this->meterReadingInitializer->getSmartMeterToPricePlanAccounts();
+        $currentAvailableSupplierIds = DB::table('smart_meters')
+            ->join('price_plans', 'smart_meters.price_plan_id', '=', 'price_plans.id')
+            ->get(['smartMeterId', 'supplier'])->toArray();
+
 
         $currentSupplierIdForSmartMeterID = [];
         foreach ($currentAvailableSupplierIds as $currentAvailableSupplierId) {
-            if ($currentAvailableSupplierId['id'] = $smartMeterId) {
-                $currentSupplierIdForSmartMeterID = ['Current Supplier' => $currentAvailableSupplierId['value'], "SmartmeterId" => $currentAvailableSupplierId['id']];
+            if ($currentAvailableSupplierId->smartMeterId = $smartMeterId) {
+                $currentSupplierIdForSmartMeterID = ['Current Supplier' => $currentAvailableSupplierId->supplier,
+                    "SmartMeterId" => $currentAvailableSupplierId->smartMeterId];
             }
         }
         array_push($costPricePerPlans, $currentSupplierIdForSmartMeterID);
@@ -50,12 +60,12 @@ class PricePlanService
         return $costPricePerPlans;
     }
 
-    private function calculateCost($electricityReadings, PricePlan $pricePlan)
+    private function calculateCost($electricityReadings, $pricePlan)
     {
         $average = $this->calculateAverageReading($electricityReadings);
         $timeElapsed = $this->calculateTimeElapsed($electricityReadings);
         $averagedCost = $average / $timeElapsed;
-        return $averagedCost * $pricePlan->unitrate;
+        return $averagedCost * $pricePlan->unitRate;
     }
 
     private function calculateAverageReading($electricityReadings)
@@ -63,29 +73,25 @@ class PricePlanService
         if(count($electricityReadings) <= 0){
             throw new InvalidMeterIdException("No readings available");
         }
-
         $newSummedReadings = 0;
-        foreach (array($electricityReadings) as $electricityReading) {
-            foreach ($electricityReading as ["readings" => $reading]) {
-                $newSummedReadings += $reading;
+        foreach ($electricityReadings as $electricityReading) {
+            foreach ($electricityReading as $reading) {
+                $newSummedReadings += (int)$reading;
             }
         }
-
         return $newSummedReadings / count($electricityReadings);
     }
 
     private function calculateTimeElapsed($electricityReadings)
     {
         $readingHours = [];
-        foreach (array($electricityReadings) as $electricityReading) {
-            foreach ($electricityReading as ["time" => $time]) {
+        foreach ($electricityReadings as $electricityReading) {
+            foreach ($electricityReading as $time) {
                 $readingHours[] = $time;
             }
         }
         $minimumElectricityReading = strtotime(min($readingHours));
         $maximumElectricityReading = strtotime(max($readingHours));
-        $timeElapsedInHours = abs($maximumElectricityReading - $minimumElectricityReading) / (60 * 60);
-        return $timeElapsedInHours;
+        return abs($maximumElectricityReading - $minimumElectricityReading) / (60 * 60);
     }
-
 }
