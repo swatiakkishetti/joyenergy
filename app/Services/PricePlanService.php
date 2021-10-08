@@ -10,12 +10,10 @@ use Illuminate\Support\Facades\DB;
 class PricePlanService
 {
     private $meterReadingService;
-    private $meterReadingInitializer;
 
-    public function __construct(MeterReadingService $meterReadingService, MeterReadingsInitialize $meterReadingInitializer)
+    public function __construct(MeterReadingService $meterReadingService)
     {
         $this->meterReadingService = $meterReadingService;
-        $this->meterReadingInitializer = $meterReadingInitializer;
     }
 
     public function getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId)
