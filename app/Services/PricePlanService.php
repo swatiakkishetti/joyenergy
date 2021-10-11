@@ -3,47 +3,44 @@
 namespace App\Services;
 
 use App\Exceptions\InvalidMeterIdException;
-use App\Models\MeterReadingsInitialize;
-use App\Models\PricePlan;
-use Illuminate\Support\Facades\DB;
+use App\Repository\PricePlanRepository;
 
 class PricePlanService
 {
     private $meterReadingService;
+    private $pricePlanRepository;
 
-    public function __construct(MeterReadingService $meterReadingService)
+    public function __construct(MeterReadingService $meterReadingService, PricePlanRepository $pricePlanRepository)
     {
         $this->meterReadingService = $meterReadingService;
+        $this->pricePlanRepository = $pricePlanRepository;
     }
 
-    public function getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId)
+    public function getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId): ?array
     {
         $getCostForAllPlans = [];
 
-        $readings = DB::table('electricity_readings')
-            ->join('smart_meters', 'electricity_readings.smart_meter_id', '=', 'smart_meters.id')
-            ->where('smart_meters.smartMeterId', '=', $smartMeterId)
-            ->get(['time', 'reading'])->toArray();
 
-        $pricePlans = DB::table('price_plans')->get(['supplier', 'unitRate'])->toArray();
+        $readings = $this->meterReadingService->getReadings($smartMeterId);
+
+        $pricePlans = $this->pricePlanRepository->getPricePlans();
 
         if (is_null($readings)) {
-            return $readings;
+            return null;
         }
 
         foreach ($pricePlans as $pricePlan) {
+
             $getCostForAllPlans[] = array('key' => $pricePlan->supplier, 'value' => $this->calculateCost($readings, $pricePlan));
         }
 
         return $getCostForAllPlans;
     }
 
-    public function getCostPlanForAllSuppliersWithCurrentSupplierDetails($smartMeterId)
+    public function getCostPlanForAllSuppliersWithCurrentSupplierDetails($smartMeterId): ?array
     {
         $costPricePerPlans = $this->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
-        $currentAvailableSupplierIds = DB::table('smart_meters')
-            ->join('price_plans', 'smart_meters.price_plan_id', '=', 'price_plans.id')
-            ->get(['smartMeterId', 'supplier'])->toArray();
+        $currentAvailableSupplierIds = $this->pricePlanRepository->getCurrentAvailableSupplierIds();
 
 
         $currentSupplierIdForSmartMeterID = [];
@@ -63,12 +60,14 @@ class PricePlanService
         $average = $this->calculateAverageReading($electricityReadings);
         $timeElapsed = $this->calculateTimeElapsed($electricityReadings);
         $averagedCost = $average / $timeElapsed;
+
         return $averagedCost * $pricePlan->unitRate;
     }
 
     private function calculateAverageReading($electricityReadings)
     {
-        if(count($electricityReadings) <= 0){
+
+        if (count($electricityReadings) <= 0) {
             throw new InvalidMeterIdException("No readings available");
         }
         $newSummedReadings = 0;

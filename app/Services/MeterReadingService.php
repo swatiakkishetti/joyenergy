@@ -19,7 +19,7 @@ class MeterReadingService
         $this->pricePlanRepository = $pricePlanRepository;
     }
 
-    public function getReadings($smartMeterId)
+    public function getReadings($smartMeterId): \Illuminate\Support\Collection
     {
         return $this->electricityReadingRepository->getElectricityReadings($smartMeterId);
     }
