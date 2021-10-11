@@ -15,11 +15,11 @@ class ElectricityReadingRepository
             ->get(['time', 'reading']);
     }
 
-    public function getSmartMeterId($smartMeterId): \Illuminate\Support\Collection
+    public function getSmartMeterId($smartMeterId)
     {
         return DB::table('smart_meters')
             ->where('smart_meters.smartMeterId', '=', $smartMeterId)
-            ->get('smart_meters.id');
+            ->first('smart_meters.id');
     }
 
     public function insertElectricityReadings($electricityReadingArray): bool
@@ -28,8 +28,9 @@ class ElectricityReadingRepository
             ->insert($electricityReadingArray);
     }
 
-    public function insertSmartMeter($smartMeter){
-        DB::table('smart_meters')
+    public function insertSmartMeter($smartMeter): int
+    {
+        return DB::table('smart_meters')
             ->insertGetId($smartMeter);
     }
 }

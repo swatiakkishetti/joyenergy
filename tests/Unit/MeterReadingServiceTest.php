@@ -6,6 +6,7 @@ use App\Models\MeterReadingsInitialize;
 use App\Repository\ElectricityReadingRepository;
 use App\Repository\PricePlanRepository;
 use App\Services\MeterReadingService;
+use stdClass;
 use Tests\TestCase;
 
 
@@ -52,14 +53,30 @@ class MeterReadingServiceTest extends TestCase
     /**
      * @test
      */
-//    public function shouldReturnTrueIfReadingsAreInsertedForAvailableSmartMeter()
-//    {
-//        $this->electricityReadingRepositoryMock->method('getSmartMeterId')->willReturn(collect([1]));
-//        $this->electricityReadingRepositoryMock->method('insertElectricityReadings')->willReturn(true);
-//
-//        $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1","supplier",['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']));
-//
-//    }
+    public function shouldReturnTrueIfReadingsAreInsertedForAvailableSmartMeter()
+    {
+        $smartMeterIdMock = new stdClass();
+        $smartMeterIdMock->id = '1';
+        $this->electricityReadingRepositoryMock->method('getSmartMeterId')->willReturn($smartMeterIdMock);
+        $this->electricityReadingRepositoryMock->method('insertElectricityReadings')->willReturn(true);
+
+        $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1","supplier",[['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]));
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnTrueIfReadingsAreInsertedForNewSmartMeter()
+    {
+        $pricePlanIdMock = new stdClass();
+        $pricePlanIdMock->id = '1';
+        $this->electricityReadingRepositoryMock->method('getSmartMeterId')->willReturn(null);
+        $this->pricePlanRepositoryMock->method('getPricePlanId')->willReturn($pricePlanIdMock);
+        $this->electricityReadingRepositoryMock->method('insertElectricityReadings')->willReturn(true);
+        $this->electricityReadingRepositoryMock->method('insertSmartMeter')->willReturn(1);
+
+        $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1","supplier",[['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]));
+    }
 
     protected function tearDown(): void
     {

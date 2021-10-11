@@ -29,17 +29,14 @@ class MeterReadingService
         $result = false;
         foreach ($readings as $reading) {
             $smartIDFromDb = $this->electricityReadingRepository->getSmartMeterId($smartMeterId);
-            var_dump($smartIDFromDb);
-            if (count($smartIDFromDb) > 0 && (int)$smartIDFromDb[0]->id > 0) {
-                var_dump("im here");
-                $result = $this->insertDataIntoElectricityReadings($reading, (int)$smartIDFromDb[0]->id);
+
+            if ($smartIDFromDb != null && $smartIDFromDb->id > 0) {
+                $result = $this->insertDataIntoElectricityReadings($reading, $smartIDFromDb->id);
             } else {
                 $pricePlanIdFromDB = $this->pricePlanRepository->getPricePlanId($supplier);
 
-                if (count($pricePlanIdFromDB) > 0) {
-                    $pricePlanIdFromDB = (int)$pricePlanIdFromDB[0]->id;
-                    $smartMeter = array('smartMeterId' => $smartMeterId, 'price_plan_id' => $pricePlanIdFromDB);
-
+                if ($pricePlanIdFromDB !=null && $pricePlanIdFromDB->id > 0) {
+                    $smartMeter = array('smartMeterId' => $smartMeterId, 'price_plan_id' => $pricePlanIdFromDB->id);
                     $insertedSmartMeterId = $this->electricityReadingRepository->insertSmartMeter($smartMeter);
 
                     if ($insertedSmartMeterId > 0) {
@@ -59,7 +56,7 @@ class MeterReadingService
      */
     private function insertDataIntoElectricityReadings($reading, int $smartIDFromDb):bool
     {
-        $electricityReadingArray = array('reading' => $reading['reading'], 'time' => $reading['time'], 'smart_meter_id' => intval($smartIDFromDb),
+        $electricityReadingArray = array('reading' => $reading['reading'], 'time' => $reading['time'], 'smart_meter_id' => $smartIDFromDb,
             'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'));
         return $this->electricityReadingRepository->insertElectricityReadings($electricityReadingArray);
     }
