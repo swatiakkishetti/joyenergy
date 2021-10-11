@@ -5,15 +5,18 @@ namespace App\Services;
 use App\Models\ElectricityReadings;
 use App\Models\MeterReadingsInitialize;
 use App\Repository\ElectricityReadingRepository;
+use App\Repository\PricePlanRepository;
 use Illuminate\Support\Facades\DB;
 
 class MeterReadingService
 {
-    Private $electricityReadingRepository;
+    private $electricityReadingRepository;
+    private $pricePlanRepository;
 
-    public function __construct(ElectricityReadingRepository $electricityReadingRepository)
+    public function __construct(ElectricityReadingRepository $electricityReadingRepository, PricePlanRepository $pricePlanRepository)
     {
-       $this-> electricityReadingRepository = $electricityReadingRepository;
+        $this->electricityReadingRepository = $electricityReadingRepository;
+        $this->pricePlanRepository = $pricePlanRepository;
     }
 
     public function getReadings($smartMeterId)
@@ -21,31 +24,25 @@ class MeterReadingService
         return $this->electricityReadingRepository->getElectricityReadings($smartMeterId);
     }
 
-    public function storeReadings($smartMeterId, $supplier, $readings)
+    public function storeReadings($smartMeterId, $supplier, $readings): bool
     {
-
+        $result = false;
         foreach ($readings as $reading) {
-            $result = false;
-            $smartIDFromDb = DB::table('smart_meters')
-                ->where('smart_meters.smartMeterId', '=', $smartMeterId)
-                ->get('smart_meters.id');
-
-            if(count($smartIDFromDb) > 0 && (int)$smartIDFromDb[0]->id > 0 ){
+            $smartIDFromDb = $this->electricityReadingRepository->getSmartMeterId($smartMeterId);
+            var_dump($smartIDFromDb);
+            if (count($smartIDFromDb) > 0 && (int)$smartIDFromDb[0]->id > 0) {
+                var_dump("im here");
                 $result = $this->insertDataIntoElectricityReadings($reading, (int)$smartIDFromDb[0]->id);
-            }
-            else{
-                $pricePlanIdFromDB = DB::table('price_plans')
-                            ->where('price_plans.supplier', '=', $supplier)
-                            ->get('price_plans.id');
+            } else {
+                $pricePlanIdFromDB = $this->pricePlanRepository->getPricePlanId($supplier);
 
-                if(count($pricePlanIdFromDB) > 0){
+                if (count($pricePlanIdFromDB) > 0) {
                     $pricePlanIdFromDB = (int)$pricePlanIdFromDB[0]->id;
-                    $data = array('smartMeterId' => $smartMeterId, 'price_plan_id' => $pricePlanIdFromDB);
+                    $smartMeter = array('smartMeterId' => $smartMeterId, 'price_plan_id' => $pricePlanIdFromDB);
 
-                    $insertedSmartMeterId = DB::table('smart_meters')
-                        ->insertGetId($data);
+                    $insertedSmartMeterId = $this->electricityReadingRepository->insertSmartMeter($smartMeter);
 
-                    if($insertedSmartMeterId > 0){
+                    if ($insertedSmartMeterId > 0) {
                         $result = $this->insertDataIntoElectricityReadings($reading, $insertedSmartMeterId);
                     }
                 }
@@ -57,27 +54,14 @@ class MeterReadingService
 
     /**
      * @param $reading
-     * @param array $smartIDFromDb
+     * @param int $smartIDFromDb
+     * @return bool
      */
-    private function insertDataIntoElectricityReadings($reading, int $smartIDFromDb)
+    private function insertDataIntoElectricityReadings($reading, int $smartIDFromDb):bool
     {
-        $data = array('reading' => $reading['reading'], 'time' => $reading['time'], 'smart_meter_id' => intval($smartIDFromDb),
+        $electricityReadingArray = array('reading' => $reading['reading'], 'time' => $reading['time'], 'smart_meter_id' => intval($smartIDFromDb),
             'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'));
-        $result = DB::table(ElectricityReadings::$tableName)
-            ->insert($data);
-
-        return $result;
-    }
-
-    /**
-     * @param $smartMeterId
-     * @return \Illuminate\Support\Collection
-     */
-    private function getSmartIDFromDB($smartMeterId): \Illuminate\Support\Collection
-    {
-        return DB::table('smart_meters')
-            ->where('smart_meters.smartMeterId', '=', $smartMeterId)
-            ->get('smart_meters.id')->values();
+        return $this->electricityReadingRepository->insertElectricityReadings($electricityReadingArray);
     }
 
 }

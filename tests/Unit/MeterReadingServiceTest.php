@@ -4,19 +4,23 @@ namespace Tests\Unit;
 
 use App\Models\MeterReadingsInitialize;
 use App\Repository\ElectricityReadingRepository;
+use App\Repository\PricePlanRepository;
 use App\Services\MeterReadingService;
 use Tests\TestCase;
 
 
 class MeterReadingServiceTest extends TestCase
 {
-    private static $meterReadingService;
+    private $meterReadingService;
     private $electricityReadingRepositoryMock;
+    private $pricePlanRepositoryMock;
 
     protected function setUp(): void
     {
         $this->electricityReadingRepositoryMock = $this->createMock(ElectricityReadingRepository::class);
-        MeterReadingServiceTest::$meterReadingService = new MeterReadingService($this->electricityReadingRepositoryMock);
+        $this->pricePlanRepositoryMock = $this->createMock(PricePlanRepository::class);
+
+        $this->meterReadingService = new MeterReadingService($this->electricityReadingRepositoryMock,$this->pricePlanRepositoryMock);
     }
 
     /**
@@ -24,10 +28,10 @@ class MeterReadingServiceTest extends TestCase
      */
     public function should_Return_Readings_For_Valid_Meter_Id()
     {
-        $expectedReadings = json_encode(['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']);
+        $expectedReadings = collect(['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']);
         $this->electricityReadingRepositoryMock->method('getElectricityReadings')->willReturn($expectedReadings);
 
-        $actualReadings = MeterReadingServiceTest::$meterReadingService->getReadings("smart-meter-1");
+        $actualReadings = $this->meterReadingService->getReadings("smart-meter-1");
 
         $this->assertEquals($expectedReadings, $actualReadings);
     }
@@ -37,13 +41,25 @@ class MeterReadingServiceTest extends TestCase
      */
     public function should_Return_Empty_Array_For_Invalid_Meter_Id()
     {
-        $expectedReadings = [];
+        $expectedReadings = collect([]);
         $this->electricityReadingRepositoryMock->method('getElectricityReadings')->willReturn($expectedReadings);
 
-        $actualReadings = MeterReadingServiceTest::$meterReadingService->getReadings("unknown-id");
+        $actualReadings = $this->meterReadingService->getReadings("unknown-id");
 
         $this->assertEquals($expectedReadings, $actualReadings);
     }
+
+    /**
+     * @test
+     */
+//    public function shouldReturnTrueIfReadingsAreInsertedForAvailableSmartMeter()
+//    {
+//        $this->electricityReadingRepositoryMock->method('getSmartMeterId')->willReturn(collect([1]));
+//        $this->electricityReadingRepositoryMock->method('insertElectricityReadings')->willReturn(true);
+//
+//        $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1","supplier",['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']));
+//
+//    }
 
     protected function tearDown(): void
     {
