@@ -19,21 +19,15 @@ class PricePlanService
     public function getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId): ?array
     {
         $getCostForAllPlans = [];
-
-
         $readings = $this->meterReadingService->getReadings($smartMeterId);
-
         $pricePlans = $this->pricePlanRepository->getPricePlans();
 
         if (is_null($readings)) {
             return null;
         }
-
         foreach ($pricePlans as $pricePlan) {
-
             $getCostForAllPlans[] = array('key' => $pricePlan->supplier, 'value' => $this->calculateCost($readings, $pricePlan));
         }
-
         return $getCostForAllPlans;
     }
 
@@ -41,7 +35,6 @@ class PricePlanService
     {
         $costPricePerPlans = $this->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
         $currentAvailableSupplierIds = $this->pricePlanRepository->getCurrentAvailableSupplierIds();
-
 
         $currentSupplierIdForSmartMeterID = [];
         foreach ($currentAvailableSupplierIds as $currentAvailableSupplierId) {
@@ -60,13 +53,11 @@ class PricePlanService
         $average = $this->calculateAverageReading($electricityReadings);
         $timeElapsed = $this->calculateTimeElapsed($electricityReadings);
         $averagedCost = $average / $timeElapsed;
-
         return $averagedCost * $pricePlan->unitRate;
     }
 
     private function calculateAverageReading($electricityReadings)
     {
-
         if (count($electricityReadings) <= 0) {
             throw new InvalidMeterIdException("No readings available");
         }
