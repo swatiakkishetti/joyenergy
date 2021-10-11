@@ -4,19 +4,21 @@ namespace App\Services;
 
 use App\Models\ElectricityReadings;
 use App\Models\MeterReadingsInitialize;
+use App\Repository\ElectricityReadingRepository;
 use Illuminate\Support\Facades\DB;
 
 class MeterReadingService
 {
+    Private $electricityReadingRepository;
+
+    public function __construct(ElectricityReadingRepository $electricityReadingRepository)
+    {
+       $this-> electricityReadingRepository = $electricityReadingRepository;
+    }
 
     public function getReadings($smartMeterId)
     {
-        $readings = DB::table(ElectricityReadings::$tableName)
-            ->join('smart_meters', 'electricity_readings.smart_meter_id', '=', 'smart_meters.id')
-            ->where('smart_meters.smartMeterId', '=', $smartMeterId)
-            ->get(['time', 'reading']);
-
-        return $readings;
+        return $this->electricityReadingRepository->getElectricityReadings($smartMeterId);
     }
 
     public function storeReadings($smartMeterId, $supplier, $readings)
