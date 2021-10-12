@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\PricePlanService;
+use Symfony\Component\HttpFoundation\Request;
 
 class PricePlanComparatorController extends Controller
 {
@@ -13,9 +14,10 @@ class PricePlanComparatorController extends Controller
         $this->pricePlanService = $pricePlanService;
     }
 
-    public function recommendCheapestPricePlans($smartMeterId)
+    public function recommendCheapestPricePlans($smartMeterId,Request $request): \Illuminate\Http\JsonResponse
     {
-        $limit = $_GET['limit'];
+        $limit= $request->query('limit');
+
         $recommendedPlans = $this->pricePlanService->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
         $recommendedPlansAfterSorting = $this->sortPlans($recommendedPlans);
 
