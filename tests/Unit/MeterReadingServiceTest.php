@@ -60,7 +60,7 @@ class MeterReadingServiceTest extends TestCase
         $this->electricityReadingRepositoryMock->method('getSmartMeterId')->willReturn($smartMeterIdMock);
         $this->electricityReadingRepositoryMock->method('insertElectricityReadings')->willReturn(true);
 
-        $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1","supplier",[['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]));
+        $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1",[['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]));
     }
 
     /**
@@ -71,11 +71,11 @@ class MeterReadingServiceTest extends TestCase
         $pricePlanIdMock = new stdClass();
         $pricePlanIdMock->id = '1';
         $this->electricityReadingRepositoryMock->method('getSmartMeterId')->willReturn(null);
-        $this->pricePlanRepositoryMock->method('getPricePlanId')->willReturn($pricePlanIdMock);
+        $this->pricePlanRepositoryMock->method('getRandomPricePlanId')->willReturn($pricePlanIdMock);
         $this->electricityReadingRepositoryMock->method('insertElectricityReadings')->willReturn(true);
         $this->electricityReadingRepositoryMock->method('insertSmartMeter')->willReturn(1);
 
-        $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1","supplier",[['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]));
+        $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1",[['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]));
     }
 
     protected function tearDown(): void

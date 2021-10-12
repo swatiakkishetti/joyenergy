@@ -24,7 +24,7 @@ class MeterReadingService
         return $this->electricityReadingRepository->getElectricityReadings($smartMeterId);
     }
 
-    public function storeReadings($smartMeterId, $supplier, $readings): bool
+    public function storeReadings($smartMeterId, $readings): bool
     {
         $result = false;
         foreach ($readings as $reading) {
@@ -33,10 +33,10 @@ class MeterReadingService
             if ($smartIDFromDb != null && $smartIDFromDb->id > 0) {
                 $result = $this->insertDataIntoElectricityReadings($reading, $smartIDFromDb->id);
             } else {
-                $pricePlanIdFromDB = $this->pricePlanRepository->getPricePlanId($supplier);
+                $randomPricePlanIdFromDB = $this->pricePlanRepository->getRandomPricePlanId();
 
-                if ($pricePlanIdFromDB !=null && $pricePlanIdFromDB->id > 0) {
-                    $smartMeter = array('smartMeterId' => $smartMeterId, 'price_plan_id' => $pricePlanIdFromDB->id);
+                if ($randomPricePlanIdFromDB !=null && $randomPricePlanIdFromDB->id > 0) {
+                    $smartMeter = array('smartMeterId' => $smartMeterId, 'price_plan_id' => $randomPricePlanIdFromDB->id);
                     $insertedSmartMeterId = $this->electricityReadingRepository->insertSmartMeter($smartMeter);
 
                     if ($insertedSmartMeterId > 0) {
