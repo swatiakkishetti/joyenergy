@@ -15,10 +15,11 @@ class PricePlanRepository
         return DB::table('price_plans')->get(['supplier', 'unitRate'])->toArray();
     }
 
-    public function getCurrentAvailableSupplierIds(): array
+    public function getCurrentAvailableSupplierIds($smartMeterId): array
     {
         return  DB::table('smart_meters')
             ->join('price_plans', 'smart_meters.price_plan_id', '=', 'price_plans.id')
+            ->where('smart_meters.smartMeterId', '=', $smartMeterId)
             ->get(['smartMeterId', 'supplier'])->toArray();
     }
 }

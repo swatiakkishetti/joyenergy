@@ -34,7 +34,7 @@ class PricePlanService
     public function getCostPlanForAllSuppliersWithCurrentSupplierDetails($smartMeterId): ?array
     {
         $costPricePerPlans = $this->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
-        $currentAvailableSupplierIds = $this->pricePlanRepository->getCurrentAvailableSupplierIds();
+        $currentAvailableSupplierIds = $this->pricePlanRepository->getCurrentAvailableSupplierIds($smartMeterId);
 
         $currentSupplierIdForSmartMeterID = [];
         foreach ($currentAvailableSupplierIds as $currentAvailableSupplierId) {
