@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class ElectricityReadings extends Model
 {
     use HasFactory;
+
     static $tableName = 'electricity_readings';
 }

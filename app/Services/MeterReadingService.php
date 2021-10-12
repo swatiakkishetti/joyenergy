@@ -2,11 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\ElectricityReadings;
-use App\Models\MeterReadingsInitialize;
 use App\Repository\ElectricityReadingRepository;
 use App\Repository\PricePlanRepository;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class MeterReadingService
 {
@@ -19,7 +17,7 @@ class MeterReadingService
         $this->pricePlanRepository = $pricePlanRepository;
     }
 
-    public function getReadings($smartMeterId): \Illuminate\Support\Collection
+    public function getReadings($smartMeterId): Collection
     {
         return $this->electricityReadingRepository->getElectricityReadings($smartMeterId);
     }
@@ -35,7 +33,7 @@ class MeterReadingService
             } else {
                 $randomPricePlanIdFromDB = $this->pricePlanRepository->getRandomPricePlanId();
 
-                if ($randomPricePlanIdFromDB !=null && $randomPricePlanIdFromDB->id > 0) {
+                if ($randomPricePlanIdFromDB != null && $randomPricePlanIdFromDB->id > 0) {
                     $smartMeter = array('smartMeterId' => $smartMeterId, 'price_plan_id' => $randomPricePlanIdFromDB->id);
                     $insertedSmartMeterId = $this->electricityReadingRepository->insertSmartMeter($smartMeter);
 
@@ -54,7 +52,7 @@ class MeterReadingService
      * @param int $smartIDFromDb
      * @return bool
      */
-    private function insertDataIntoElectricityReadings($reading, int $smartIDFromDb):bool
+    private function insertDataIntoElectricityReadings($reading, int $smartIDFromDb): bool
     {
         $electricityReadingArray = array('reading' => $reading['reading'], 'time' => $reading['time'], 'smart_meter_id' => $smartIDFromDb,
             'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'));

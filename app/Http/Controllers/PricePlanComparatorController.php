@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\PricePlanService;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
 
 class PricePlanComparatorController extends Controller
 {
@@ -14,9 +16,9 @@ class PricePlanComparatorController extends Controller
         $this->pricePlanService = $pricePlanService;
     }
 
-    public function recommendCheapestPricePlans($smartMeterId,Request $request): \Illuminate\Http\JsonResponse
+    public function recommendCheapestPricePlans($smartMeterId, Request $request): JsonResponse
     {
-        $limit= $request->query('limit');
+        $limit = $request->query('limit');
 
         $recommendedPlans = $this->pricePlanService->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
         $recommendedPlansAfterSorting = $this->sortPlans($recommendedPlans);
@@ -24,13 +26,13 @@ class PricePlanComparatorController extends Controller
         if ($limit != null && $limit < count($recommendedPlans)) {
             $recommendedPlansAfterSorting = array_slice($recommendedPlansAfterSorting, 0, $limit);
         }
-        return response()->json($recommendedPlansAfterSorting, 200);
+        return response()->json($recommendedPlansAfterSorting);
     }
 
-    public function calculatedCostForEachPricePlan($smartMeterId)
+    public function calculatedCostForEachPricePlan($smartMeterId): JsonResponse
     {
         $costPricePerPlans = $this->pricePlanService->getCostPlanForAllSuppliersWithCurrentSupplierDetails($smartMeterId);
-        return response()->json($costPricePerPlans, 200);
+        return response()->json($costPricePerPlans);
     }
 
 

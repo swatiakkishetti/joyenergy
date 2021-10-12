@@ -3,11 +3,12 @@
 namespace App\Repository;
 
 use App\Models\ElectricityReadings;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ElectricityReadingRepository
 {
-    public function getElectricityReadings($smartMeterId): \Illuminate\Support\Collection
+    public function getElectricityReadings($smartMeterId): Collection
     {
         return DB::table(ElectricityReadings::$tableName)
             ->join('smart_meters', 'electricity_readings.smart_meter_id', '=', 'smart_meters.id')
