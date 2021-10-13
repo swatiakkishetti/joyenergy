@@ -32,13 +32,13 @@ class MeterReadingController extends Controller
         try {
             $isReadingsStored = $this->meterReadingService->storeReadings($request->all()["smartMeterId"], $request->all()["electricityReadings"]);
 
-            if ($isReadingsStored) {
-                return response()->json("Readings inserted sucessfully", 201);
-            }
-
-            return response()->json("No readings available to insert");
         } catch (InvalidMeterIdException $exception) {
             return response()->json($exception->getMessage());
         }
+        if ($isReadingsStored) {
+            return response()->json("Readings inserted successfully", 201);
+        }
+
+        return response()->json("No readings available to insert");
     }
 }

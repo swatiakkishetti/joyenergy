@@ -23,33 +23,37 @@ class PricePlanComparatorController extends Controller
 
         try {
             $recommendedPlans = $this->pricePlanService->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
-            $recommendedPlansAfterSorting = $this->sortPlans($recommendedPlans);
-
-            if ($limit != null && $limit < count($recommendedPlans)) {
-                $recommendedPlansAfterSorting = array_slice($recommendedPlansAfterSorting, 0, $limit);
-            }
-
-            return response()->json($recommendedPlansAfterSorting);
 
         } catch (InvalidMeterIdException $exception) {
             return response()->json($exception->getMessage());
         }
+        $recommendedPlansAfterSorting = $this->sortPlans($recommendedPlans);
+
+        if ($limit != null && $limit < count($recommendedPlans)) {
+            $recommendedPlansAfterSorting = array_slice($recommendedPlansAfterSorting, 0, $limit);
+        }
+
+        return response()->json($recommendedPlansAfterSorting);
     }
 
     /**
      * @throws InvalidMeterIdException
      */
-    public function calculatedCostForEachPricePlan($smartMeterId): JsonResponse
+    public function compareCostForEachPricePlan($smartMeterId): JsonResponse
     {
-        $costPricePerPlans = $this->pricePlanService->getCostPlanForAllSuppliersWithCurrentSupplierDetails($smartMeterId);
+        try{
+            $costPricePerPlans = $this->pricePlanService->getCostPlanForAllSuppliersWithCurrentSupplierDetails($smartMeterId);
+        }catch(InvalidMeterIdException $exception){
+            return response()->json($exception->getMessage());
+        }
         return response()->json($costPricePerPlans);
     }
 
 
     private function sortPlans($recommendedPlans)
     {
-        $sortedPlans = array_column($recommendedPlans, 'value');
-        array_multisort($sortedPlans, SORT_ASC, $recommendedPlans);
+        $recommendedPlansReading = array_column($recommendedPlans, 'value');
+        array_multisort($recommendedPlansReading, SORT_ASC, $recommendedPlans);
         return $recommendedPlans;
     }
 }

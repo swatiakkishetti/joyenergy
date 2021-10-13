@@ -25,9 +25,6 @@ class PricePlanService
         $readings = $this->meterReadingService->getReadings($smartMeterId);
         $pricePlans = $this->pricePlanRepository->getPricePlans();
 
-        if (is_null($readings)) {
-            return null;
-        }
         foreach ($pricePlans as $pricePlan) {
             $getCostForAllPlans[] = array('key' => $pricePlan->supplier, 'value' => $this->calculateCost($readings, $pricePlan));
         }

@@ -85,4 +85,6 @@ class MeterReadingServiceTest extends TestCase
         $this->meterReadingService->storeReadings("invalid-id", [['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]);
     }
 
+
+
 }
