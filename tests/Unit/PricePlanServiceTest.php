@@ -57,7 +57,7 @@ class PricePlanServiceTest extends TestCase
 
 
         $this->expectException(InvalidMeterIdException::class);
-        $this->expectExceptionMessage("No readings available");
+        $this->expectExceptionMessage("No electricity readings available for unknown-id");
 
         $this->pricePlanService->getConsumptionCostOfElectricityReadingsForEachPricePlan("unknown-id");
 
@@ -105,7 +105,7 @@ class PricePlanServiceTest extends TestCase
         $this->pricePlanRepositoryMock->method('getCurrentAvailableSupplierIds')->willReturn(array($availableSupplierId));
 
         $this->expectException(InvalidMeterIdException::class);
-        $this->expectExceptionMessage("No readings available");
+        $this->expectExceptionMessage("No electricity readings available for unknown-id");
 
         $this->pricePlanService->getCostPlanForAllSuppliersWithCurrentSupplierDetails("unknown-id");
     }

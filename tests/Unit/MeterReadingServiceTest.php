@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Exceptions\InvalidMeterIdException;
 use App\Repository\ElectricityReadingRepository;
 use App\Repository\PricePlanRepository;
 use App\Services\MeterReadingService;
@@ -25,7 +26,7 @@ class MeterReadingServiceTest extends TestCase
     /**
      * @test
      */
-    public function should_Return_Readings_For_Valid_Meter_Id()
+    public function shouldReturnReadingsForValidMeterId()
     {
         $expectedReadings = collect(['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']);
         $this->electricityReadingRepositoryMock->method('getElectricityReadings')->willReturn($expectedReadings);
@@ -38,14 +39,12 @@ class MeterReadingServiceTest extends TestCase
     /**
      * @test
      */
-    public function should_Return_Empty_Array_For_Invalid_Meter_Id()
+    public function shouldReturnExceptionMessageForInvalidMeterId()
     {
-        $expectedReadings = collect([]);
-        $this->electricityReadingRepositoryMock->method('getElectricityReadings')->willReturn($expectedReadings);
-
-        $actualReadings = $this->meterReadingService->getReadings("unknown-id");
-
-        $this->assertEquals($expectedReadings, $actualReadings);
+        $this->expectException(InvalidMeterIdException::class);
+        $this->expectExceptionMessage("No electricity readings available for unknown-id");
+        $this->electricityReadingRepositoryMock->method('getElectricityReadings')->willReturn(collect([]));
+        $this->meterReadingService->getReadings("unknown-id");
     }
 
     /**
@@ -75,4 +74,15 @@ class MeterReadingServiceTest extends TestCase
 
         $this->assertTrue($this->meterReadingService->storeReadings("smart-meter-1", [['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]));
     }
+
+    /**
+     * @test
+     */
+    public function shouldReturnExceptionForInvalidSmartMeterIdPattern()
+    {
+        $this->expectException(InvalidMeterIdException::class);
+        $this->expectExceptionMessage("Smart meter id should follow defined pattern (Ex: smart-meter-1)");
+        $this->meterReadingService->storeReadings("invalid-id", [['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]);
+    }
+
 }

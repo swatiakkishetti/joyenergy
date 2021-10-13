@@ -11,8 +11,8 @@ class PricePlanComparatorControllerTest extends TestCase
      */
     public function shouldThrowExceptionWhenNoReadingsAvailable()
     {
-        $response = $this->get('price-plans/recommend/smart-meter-70?limit=4')->exception->getMessage();
-        self::assertEquals("No readings available", $response);
+        $response = $this->get('price-plans/recommend/smart-meter-70?limit=4');
+        self::assertEquals("No electricity readings available for smart-meter-70", json_decode($response->content()));
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InvalidMeterIdException;
 use App\Services\PricePlanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,15 +21,24 @@ class PricePlanComparatorController extends Controller
     {
         $limit = $request->query('limit');
 
-        $recommendedPlans = $this->pricePlanService->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
-        $recommendedPlansAfterSorting = $this->sortPlans($recommendedPlans);
+        try {
+            $recommendedPlans = $this->pricePlanService->getConsumptionCostOfElectricityReadingsForEachPricePlan($smartMeterId);
+            $recommendedPlansAfterSorting = $this->sortPlans($recommendedPlans);
 
-        if ($limit != null && $limit < count($recommendedPlans)) {
-            $recommendedPlansAfterSorting = array_slice($recommendedPlansAfterSorting, 0, $limit);
+            if ($limit != null && $limit < count($recommendedPlans)) {
+                $recommendedPlansAfterSorting = array_slice($recommendedPlansAfterSorting, 0, $limit);
+            }
+
+            return response()->json($recommendedPlansAfterSorting);
+
+        } catch (InvalidMeterIdException $exception) {
+            return response()->json($exception->getMessage());
         }
-        return response()->json($recommendedPlansAfterSorting);
     }
 
+    /**
+     * @throws InvalidMeterIdException
+     */
     public function calculatedCostForEachPricePlan($smartMeterId): JsonResponse
     {
         $costPricePerPlans = $this->pricePlanService->getCostPlanForAllSuppliersWithCurrentSupplierDetails($smartMeterId);
