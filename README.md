@@ -199,3 +199,26 @@ Example output
   }
 ]
 ```
+Compatible IDEs
+
+Tested on:
+
+- Visual Studio Code(with PHP Intelephense & PHPUnit extension)
+- IntelliJ IDEA Ultimate
+
+## Useful commands
+
+### Build & Run the project
+
+```terminal
+$ ./deploy-joyenergy.php
+
+Above command will start the application on url `http://127.0.0.1:8000`.
+```
+
+### Run the tests
+
+```terminal
+$ php artisan test
+```
+
