@@ -30,6 +30,7 @@ class PricePlanServiceTest extends TestCase
 
     /**
      * @test
+     * @throws InvalidMeterIdException
      */
     public function get_Electricity_Consumption_Should_Return_Price_Plans_For_Valid_Electricity_Readings()
     {
@@ -43,11 +44,9 @@ class PricePlanServiceTest extends TestCase
      */
     public function get_Electricity_Consumption_Should_Throw_Exception_When_Readings_Not_Available()
     {
-
-
-        $pricePlan = new stdClass();
-        $pricePlan->supplier = 'The Green Eco';
-        $pricePlan->unitRate = '0.034455';
+        $pricePlan = [];
+        $pricePlan['supplier'] = 'The Green Eco';
+        $pricePlan['unitRate'] = '0.034455';
 
         $expectedReadings = collect([]);
         $this->electricityReadingRepositoryMock->method('getElectricityReadings')->willReturn($expectedReadings);
@@ -66,12 +65,13 @@ class PricePlanServiceTest extends TestCase
 
     /**
      * @test
+     * @throws InvalidMeterIdException
      */
     public function get_Cost_Plan_For_All_Suppliers_For_Valid_Meter_Id()
     {
-        $pricePlan = new stdClass();
-        $pricePlan->supplier = 'The Green Eco';
-        $pricePlan->unitRate = '0.034455';
+        $pricePlan = [];
+        $pricePlan['supplier'] = 'The Green Eco';
+        $pricePlan['unitRate'] = '0.034455';
 
         $expectedReadings = collect([['reading' => '0.1212312', 'time' => '2021-10-08 20:19:27']]);
         $this->electricityReadingRepositoryMock->method('getElectricityReadings')->willReturn($expectedReadings);
@@ -88,9 +88,9 @@ class PricePlanServiceTest extends TestCase
      */
     public function get_Cost_Plan_For_All_Suppliers_Should_Throw_Exception_For_InValid_Meter_Id()
     {
-        $pricePlan = new stdClass();
-        $pricePlan->supplier = 'The Green Eco';
-        $pricePlan->unitRate = '0.034455';
+        $pricePlan = [];
+        $pricePlan['supplier'] = 'The Green Eco';
+        $pricePlan['unitRate'] = '0.034455';
 
         $availableSupplierId = new stdClass();
         $availableSupplierId->smartMeterId = '1';
@@ -112,12 +112,13 @@ class PricePlanServiceTest extends TestCase
 
     /**
      * @test
+     * @throws InvalidMeterIdException
      */
     public function get_Cost_Plan_For_All_Suppliers_Should_Return_Plans_With_Supplier_Info()
     {
-        $pricePlan = new stdClass();
-        $pricePlan->supplier = 'The Green Eco';
-        $pricePlan->unitRate = '0.034455';
+        $pricePlan = [];
+        $pricePlan['supplier'] = 'The Green Eco';
+        $pricePlan['unitRate'] = '0.034455';
 
         $availableSupplierId = new stdClass();
         $availableSupplierId->smartMeterId = '1';

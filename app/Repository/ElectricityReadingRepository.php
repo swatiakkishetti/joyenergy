@@ -3,10 +3,11 @@
 namespace App\Repository;
 
 use App\Models\ElectricityReadings;
+use App\Models\SmartMeter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class ElectricityReadingRepository
+class ElectricityReadingRepository implements IElectricityReadingRepository
 {
     public function getElectricityReadings($smartMeterId): Collection
     {
@@ -18,20 +19,17 @@ class ElectricityReadingRepository
 
     public function getSmartMeterId($smartMeterId)
     {
-        return DB::table('smart_meters')
-            ->where('smart_meters.smartMeterId', '=', $smartMeterId)
+        return SmartMeter::query()->where('smart_meters.smartMeterId', '=', $smartMeterId)
             ->first('smart_meters.id');
     }
 
     public function insertElectricityReadings($electricityReadingArray): bool
     {
-        return DB::table(ElectricityReadings::$tableName)
-            ->insert($electricityReadingArray);
+        return ElectricityReadings::query()->insert($electricityReadingArray);
     }
 
     public function insertSmartMeter($smartMeter): int
     {
-        return DB::table('smart_meters')
-            ->insertGetId($smartMeter);
+        return SmartMeter::query()->insertGetId($smartMeter);
     }
 }

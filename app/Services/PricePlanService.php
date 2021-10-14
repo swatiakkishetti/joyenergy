@@ -3,14 +3,14 @@
 namespace App\Services;
 
 use App\Exceptions\InvalidMeterIdException;
-use App\Repository\PricePlanRepository;
+use App\Repository\IPricePlanRepository;
 
 class PricePlanService
 {
     private $meterReadingService;
     private $pricePlanRepository;
 
-    public function __construct(MeterReadingService $meterReadingService, PricePlanRepository $pricePlanRepository)
+    public function __construct(MeterReadingService $meterReadingService, IPricePlanRepository $pricePlanRepository)
     {
         $this->meterReadingService = $meterReadingService;
         $this->pricePlanRepository = $pricePlanRepository;
@@ -23,11 +23,12 @@ class PricePlanService
     {
         $getCostForAllPlans = [];
         $readings = $this->meterReadingService->getReadings($smartMeterId);
-        $pricePlans = $this->pricePlanRepository->getPricePlans();
 
+        $pricePlans = $this->pricePlanRepository->getPricePlans();
         foreach ($pricePlans as $pricePlan) {
-            $getCostForAllPlans[] = array('key' => $pricePlan->supplier, 'value' => $this->calculateCost($readings, $pricePlan));
+            $getCostForAllPlans[] = array('key' => $pricePlan['supplier'], 'value' => $this->calculateCost($readings, $pricePlan));
         }
+
         return $getCostForAllPlans;
     }
 
@@ -59,7 +60,7 @@ class PricePlanService
         $average = $this->calculateAverageReading($electricityReadings);
         $timeElapsed = $this->calculateTimeElapsed($electricityReadings);
         $averagedCost = $average / $timeElapsed;
-        return $averagedCost * $pricePlan->unitRate;
+        return $averagedCost * $pricePlan['unitRate'];
     }
 
     /**

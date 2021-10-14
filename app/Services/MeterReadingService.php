@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Exceptions\InvalidMeterIdException;
-use App\Repository\ElectricityReadingRepository;
-use App\Repository\PricePlanRepository;
+use App\Repository\IElectricityReadingRepository;
+use App\Repository\IPricePlanRepository;
 use Illuminate\Support\Collection;
 
 class MeterReadingService
@@ -12,7 +12,7 @@ class MeterReadingService
     private $electricityReadingRepository;
     private $pricePlanRepository;
 
-    public function __construct(ElectricityReadingRepository $electricityReadingRepository, PricePlanRepository $pricePlanRepository)
+    public function __construct(IElectricityReadingRepository $electricityReadingRepository, IPricePlanRepository $pricePlanRepository)
     {
         $this->electricityReadingRepository = $electricityReadingRepository;
         $this->pricePlanRepository = $pricePlanRepository;

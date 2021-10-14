@@ -2,18 +2,19 @@
 
 namespace App\Repository;
 
+use App\Models\PricePlan;
 use Illuminate\Support\Facades\DB;
 
-class PricePlanRepository
+class PricePlanRepository implements IPricePlanRepository
 {
     public function getRandomPricePlanId()
     {
-        return DB::table('price_plans')->get('price_plans.id')->random();
+        return PricePlan::query()->get('price_plans.id')->random();
     }
 
     public function getPricePlans(): array
     {
-        return DB::table('price_plans')->get(['supplier', 'unitRate'])->toArray();
+        return PricePlan::query()->get(['supplier', 'unitRate'])->toArray();
     }
 
     public function getCurrentAvailableSupplierIds($smartMeterId): array
