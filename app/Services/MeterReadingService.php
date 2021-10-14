@@ -39,8 +39,9 @@ class MeterReadingService
         $result = false;
         $this->validateSmartMeterId($smartMeterId);
 
+        $smartIDFromDb = $this->electricityReadingRepository->getSmartMeterId($smartMeterId);
+
         foreach ($readings as $reading) {
-            $smartIDFromDb = $this->electricityReadingRepository->getSmartMeterId($smartMeterId);
 
             if ($smartIDFromDb != null && $smartIDFromDb->id > 0) {
                 $result = $this->insertDataIntoElectricityReadings($reading, $smartIDFromDb->id);
